@@ -111,6 +111,17 @@ def sync_transaction(tx):
     upsert("transactions", [tx_dict(tx)])
 
 
+def _to_date(value):
+    if not value:
+        return None
+    from datetime import date
+
+    try:
+        return date.fromisoformat(value)
+    except (TypeError, ValueError):
+        return None
+
+
 def _get(table, select="*"):
     if not ENABLED:
         return []
@@ -128,6 +139,8 @@ def _get(table, select="*"):
 def seed():
     if not ENABLED:
         return
+    from datetime import date
+
     from extensions import db
     from models import Admin, Book, Member, Transaction
 
@@ -175,9 +188,9 @@ def seed():
                         id=row.get("id"),
                         book_id=row["book_id"],
                         member_id=row["member_id"],
-                        issue_date=row["issue_date"],
-                        due_date=row["due_date"],
-                        returned_at=row.get("returned_at"),
+                        issue_date=_to_date(row.get("issue_date")) or date.today(),
+                        due_date=_to_date(row.get("due_date")),
+                        returned_at=_to_date(row.get("returned_at")),
                         fine=row.get("fine", 0),
                         status=row.get("status", "issued"),
                     )
