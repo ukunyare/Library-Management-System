@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+{% block title %}Access Denied{% endblock %}
+{% block content %}
+<div class="flex flex-col items-center justify-center py-20 text-center">
+  <p class="text-7xl font-extrabold text-brand-200">403</p>
+  <h1 class="mt-4 text-2xl font-bold text-slate-900">Access denied</h1>
+  <p class="mt-2 text-sm text-slate-500">You don&rsquo;t have permission to view this page.</p>
+  <a href="{{ url_for('dashboard.index') }}"
+     class="mt-6 rounded-lg bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-brand-600/25 transition hover:bg-brand-700">Back to Dashboard</a>
+</div>
+{% endblock %}

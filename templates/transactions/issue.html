@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+{% block title %}Issue Book{% endblock %}
+{% block page_title %}Issue a Book{% endblock %}
+
+{% block content %}
+<a href="{{ url_for('dashboard.index') }}"
+   class="mb-4 inline-flex items-center gap-2 text-sm font-semibold text-slate-500 transition hover:text-brand-600">
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="h-4 w-4">
+    <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"/>
+  </svg>
+  Back to Dashboard
+</a>
+
+<div class="mx-auto max-w-2xl">
+  <div class="rounded-2xl border border-slate-200 bg-white shadow-card">
+    <div class="flex items-center gap-4 border-b border-slate-100 px-6 py-5">
+      <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-brand-50 text-brand-600">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="h-6 w-6">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
+        </svg>
+      </div>
+      <div>
+        <h2 class="font-bold text-slate-900">New Transaction</h2>
+        <p class="text-sm text-slate-500">Issue a book to a registered member.</p>
+      </div>
+    </div>
+
+    <form method="post" class="space-y-5 px-6 py-6" novalidate>
+      <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
+        <div>
+          <label for="book_id" class="mb-1.5 block text-sm font-semibold text-slate-700">Book *</label>
+          <select id="book_id" name="book_id" required
+                  class="input w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none ring-brand-500 transition focus:ring-2">
+            <option value="" disabled selected>Select a bookâ€¦</option>
+            {% for book in books %}
+            <option value="{{ book.id }}" {% if selected_book == book.id %}selected{% endif %}>
+              {{ book.title }} — {{ book.book_id }} — {{ book.author }} ({{ book.available_copies }} available)
+            </option>
+            {% endfor %}
+          </select>
+          {% if not books %}
+          <p class="mt-1 text-xs text-amber-600">No books with available copies. <a href="{{ url_for('books.add') }}" class="font-semibold underline">Add a book</a> first.</p>
+          {% endif %}
+        </div>
+        <div>
+          <label for="member_id" class="mb-1.5 block text-sm font-semibold text-slate-700">Member *</label>
+          <select id="member_id" name="member_id" required
+                  class="input w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none ring-brand-500 transition focus:ring-2">
+            <option value="" disabled selected>Select a memberâ€¦</option>
+            {% for member in members %}
+            <option value="{{ member.id }}" {% if selected_member == member.id %}selected{% endif %}>
+              {{ member.name }}{% if member.email %} â€” {{ member.email }}{% endif %}
+            </option>
+            {% endfor %}
+          </select>
+          {% if not members %}
+          <p class="mt-1 text-xs text-amber-600">No members registered. <a href="{{ url_for('members.add') }}" class="font-semibold underline">Register a member</a> first.</p>
+          {% endif %}
+        </div>
+        <div>
+          <label for="due_date" class="mb-1.5 block text-sm font-semibold text-slate-700">Due Date *</label>
+          <input type="date" id="due_date" name="due_date" required value="{{ due_date }}"
+                 class="input w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none ring-brand-500 transition focus:ring-2">
+          <p class="mt-1 text-xs text-slate-400">Default: {{ default_days }} days from today.</p>
+        </div>
+        <div class="flex items-end">
+          <div class="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-500">
+            Issued on: <span class="font-semibold text-slate-700">{{ now().strftime('%b %d, %Y') }}</span>
+          </div>
+        </div>
+      </div>
+
+      {% if books and members %}
+      <div class="flex items-center justify-end gap-3 border-t border-slate-100 pt-5">
+        <a href="{{ url_for('transactions.index') }}"
+           class="rounded-lg border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-600 transition hover:bg-slate-50">Cancel</a>
+        <button type="submit"
+                class="inline-flex items-center gap-2 rounded-lg bg-brand-600 px-6 py-2.5 text-sm font-semibold text-white shadow-lg shadow-brand-600/25 transition-all hover:bg-brand-700 active:scale-95">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="h-4 w-4">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
+          </svg>
+          Issue Book
+        </button>
+      </div>
+      {% endif %}
+    </form>
+  </div>
+</div>
+{% endblock %}

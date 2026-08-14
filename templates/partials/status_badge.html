@@ -1,0 +1,9 @@
+{% if tx.status == 'issued' %}
+  {% if tx.is_overdue %}
+  <span class="inline-flex items-center rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-bold text-red-700">Overdue</span>
+  {% else %}
+  <span class="inline-flex items-center rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-bold text-emerald-700">Issued</span>
+  {% endif %}
+{% else %}
+  <span class="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-bold text-slate-600">Returned</span>
+{% endif %}

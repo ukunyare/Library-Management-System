@@ -1,0 +1,114 @@
+{% extends 'base.html' %}
+{% from 'partials/badges.html' import availability %}
+{% block title %}{{ book.title }}{% endblock %}
+{% block page_title %}Book Details{% endblock %}
+
+{% block content %}
+<div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+  <div class="flex items-center gap-3">
+    <a href="{{ url_for('dashboard.index') }}"
+       class="inline-flex items-center gap-2 text-sm font-semibold text-slate-500 transition hover:text-brand-600">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="h-4 w-4">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"/>
+      </svg>
+      Dashboard
+    </a>
+    <span class="text-slate-300">/</span>
+    <a href="{{ url_for('books.index') }}"
+       class="inline-flex items-center gap-2 text-sm font-semibold text-slate-500 transition hover:text-brand-600">
+      Back to Books
+    </a>
+  </div>
+  <div class="flex items-center gap-2">
+    {% if book.available_copies %}
+    <a href="{{ url_for('transactions.issue') }}" class="rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-brand-600/25 transition hover:bg-brand-700 active:scale-95">Issue This Book</a>
+    {% endif %}
+    <a href="{{ url_for('books.edit', book_id=book.id) }}"
+       class="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-600 transition hover:bg-amber-50 hover:text-amber-700">Edit</a>
+    <form action="{{ url_for('books.delete', book_id=book.id) }}" method="post" class="confirm-form"
+          data-confirm="Delete &quot;{{ book.title }}&quot;? This cannot be undone.">
+      <button type="submit" class="rounded-lg border border-red-200 bg-white px-4 py-2 text-sm font-semibold text-red-600 transition hover:bg-red-50">Delete</button>
+    </form>
+  </div>
+</div>
+
+<div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+  <div class="lg:col-span-1">
+    <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-card">
+      <div class="flex h-40 items-center justify-center bg-gradient-to-br from-brand-500 via-brand-600 to-indigo-800 relative">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="h-16 w-16 text-white/30">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"/>
+        </svg>
+        <span class="absolute bottom-3 right-3 text-5xl font-extrabold uppercase tracking-tight text-white/10">{{ book.title[:1] }}</span>
+      </div>
+      <div class="p-6">
+        <h2 class="text-xl font-extrabold leading-snug text-slate-900">{{ book.title }}</h2>
+        <p class="mt-1 text-sm font-medium text-brand-600">{{ book.author }}</p>
+        <p class="mt-2 inline-flex items-center rounded-lg bg-brand-50 px-2.5 py-1 font-mono text-xs font-bold text-brand-700">{{ book.book_id }}</p>
+        <div class="mt-4">{{ availability(book) }}</div>
+      </div>
+    </div>
+
+    <div class="mt-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-card">
+      <h3 class="text-sm font-bold uppercase tracking-wide text-slate-400">Details</h3>
+      <dl class="mt-4 space-y-3 text-sm">
+        <div class="flex justify-between gap-4"><dt class="text-slate-500">Book ID</dt><dd class="font-mono font-semibold text-brand-700">{{ book.book_id }}</dd></div>
+        <div class="flex justify-between gap-4"><dt class="text-slate-500">Category</dt><dd class="font-semibold text-slate-700">{{ book.category or 'â€”' }}</dd></div>
+        <div class="flex justify-between gap-4"><dt class="text-slate-500">Publisher</dt><dd class="font-semibold text-slate-700">{{ book.publisher or 'â€”' }}</dd></div>
+        <div class="flex justify-between gap-4"><dt class="text-slate-500">Published</dt><dd class="font-semibold text-slate-700">{{ book.published_year or 'â€”' }}</dd></div>
+        <div class="flex justify-between gap-4"><dt class="text-slate-500">Total copies</dt><dd class="font-semibold text-slate-700">{{ book.total_copies }}</dd></div>
+        <div class="flex justify-between gap-4"><dt class="text-slate-500">Available</dt><dd class="font-semibold text-slate-700">{{ book.available_copies }}</dd></div>
+        <div class="flex justify-between gap-4"><dt class="text-slate-500">Issued</dt><dd class="font-semibold text-slate-700">{{ book.issued_copies }}</dd></div>
+        <div class="flex justify-between gap-4"><dt class="text-slate-500">Added</dt><dd class="font-semibold text-slate-700">{{ book.created_at.strftime('%b %d, %Y') if book.created_at }}</dd></div>
+      </dl>
+    </div>
+  </div>
+
+  <div class="lg:col-span-2">
+    <div class="rounded-2xl border border-slate-200 bg-white shadow-card">
+      <div class="border-b border-slate-100 px-6 py-4">
+        <h3 class="font-bold text-slate-900">Description</h3>
+      </div>
+      <div class="px-6 py-5 text-sm leading-relaxed text-slate-600">
+        {{ book.description or 'No description provided for this book.' }}
+      </div>
+    </div>
+
+    <div class="mt-6 rounded-2xl border border-slate-200 bg-white shadow-card">
+      <div class="border-b border-slate-100 px-6 py-4">
+        <h3 class="font-bold text-slate-900">Issue History</h3>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-sm">
+          <thead>
+            <tr class="border-b border-slate-100 text-xs uppercase tracking-wide text-slate-400">
+              <th class="px-6 py-3 font-semibold">Member</th>
+              <th class="px-6 py-3 font-semibold">Issued</th>
+              <th class="px-6 py-3 font-semibold">Due</th>
+              <th class="px-6 py-3 font-semibold">Returned</th>
+              <th class="px-6 py-3 font-semibold">Fine</th>
+              <th class="px-6 py-3 font-semibold">Status</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            {% for tx in history %}
+            <tr class="transition-colors hover:bg-slate-50">
+              <td class="px-6 py-3.5">
+                <a href="{{ url_for('members.view', member_id=tx.member.id) }}" class="font-semibold text-slate-700 hover:text-brand-600">{{ tx.member.name }}</a>
+              </td>
+              <td class="px-6 py-3.5 text-slate-600">{{ tx.issue_date|datefmt }}</td>
+              <td class="px-6 py-3.5 {{ 'font-semibold text-red-600' if tx.is_overdue else 'text-slate-600' }}">{{ tx.due_date|datefmt }}</td>
+              <td class="px-6 py-3.5 text-slate-600">{{ tx.returned_at|datefmt }}</td>
+              <td class="px-6 py-3.5 {{ 'font-semibold text-amber-600' if tx.fine else 'text-slate-400' }}">{{ tx.fine|currency if tx.fine else 'â€”' }}</td>
+              <td class="px-6 py-3.5">{% include 'partials/status_badge.html' with context %}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="6" class="px-6 py-10 text-center text-slate-400">No issue history for this book yet.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+{% block title %}{{ 'Edit Book' if editing else 'Add Book' }}{% endblock %}
+{% block page_title %}{{ 'Edit Book' if editing else 'Add New Book' }}{% endblock %}
+
+{% block content %}
+<a href="{{ url_for('dashboard.index') }}"
+   class="mb-4 inline-flex items-center gap-2 text-sm font-semibold text-slate-500 transition hover:text-brand-600">
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="h-4 w-4">
+    <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"/>
+  </svg>
+  Back to Dashboard
+</a>
+
+<div class="mx-auto max-w-3xl">
+  <div class="rounded-2xl border border-slate-200 bg-white shadow-card">
+    <div class="border-b border-slate-100 px-6 py-5">
+      <h2 class="font-bold text-slate-900">{{ 'Update book details' if editing else 'Enter book details' }}</h2>
+      <p class="mt-0.5 text-sm text-slate-500">Fields marked * are required.</p>
+    </div>
+
+    <form method="post" class="space-y-5 px-6 py-6" novalidate>
+      <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
+        <div>
+          <label for="book_id" class="mb-1.5 block text-sm font-semibold text-slate-700">Book ID *</label>
+          <input type="text" id="book_id" name="book_id" required value="{{ book.book_id or '' }}"
+                 placeholder="e.g. 505-303" maxlength="50"
+                 class="input w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 font-mono text-sm outline-none ring-brand-500 transition focus:ring-2">
+        </div>
+        <div>
+          <label for="title" class="mb-1.5 block text-sm font-semibold text-slate-700">Title *</label>
+          <input type="text" id="title" name="title" required value="{{ book.title or '' }}" placeholder="e.g. The Great Gatsby"
+                 class="input w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none ring-brand-500 transition focus:ring-2">
+        </div>
+        <div>
+          <label for="author" class="mb-1.5 block text-sm font-semibold text-slate-700">Author *</label>
+          <input type="text" id="author" name="author" required value="{{ book.author or '' }}" placeholder="e.g. F. Scott Fitzgerald"
+                 class="input w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none ring-brand-500 transition focus:ring-2">
+        </div>
+        <div>
+          <label for="category" class="mb-1.5 block text-sm font-semibold text-slate-700">Category</label>
+          <input type="text" id="category" name="category" value="{{ book.category or '' }}" list="categories" placeholder="e.g. Fiction"
+                 class="input w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none ring-brand-500 transition focus:ring-2">
+        </div>
+        <datalist id="categories">
+          <option value="Fiction"></option><option value="Non-Fiction"></option><option value="Science"></option>
+          <option value="Technology"></option><option value="History"></option><option value="Biography"></option>
+          <option value="Children"></option><option value="Reference"></option>
+        </datalist>
+        <div>
+          <label for="publisher" class="mb-1.5 block text-sm font-semibold text-slate-700">Publisher</label>
+          <input type="text" id="publisher" name="publisher" value="{{ book.publisher or '' }}" placeholder="e.g. Scribner"
+                 class="input w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none ring-brand-500 transition focus:ring-2">
+        </div>
+        <div>
+          <label for="published_year" class="mb-1.5 block text-sm font-semibold text-slate-700">Published Year</label>
+          <input type="number" id="published_year" name="published_year" min="1000" max="2100" value="{{ book.published_year or '' }}" placeholder="1925"
+                 class="input w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none ring-brand-500 transition focus:ring-2">
+        </div>
+        <div>
+          <label for="total_copies" class="mb-1.5 block text-sm font-semibold text-slate-700">Total Copies *</label>
+          <input type="number" id="total_copies" name="total_copies" min="1" required value="{{ book.total_copies or 1 }}"
+                 class="input w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none ring-brand-500 transition focus:ring-2">
+          <p class="mt-1 text-xs text-slate-400">On edit, issued copies are preserved.</p>
+        </div>
+        <div class="sm:col-span-2">
+          <label for="description" class="mb-1.5 block text-sm font-semibold text-slate-700">Description</label>
+          <textarea id="description" name="description" rows="4" placeholder="A short summary of the book..."
+                    class="input w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none ring-brand-500 transition focus:ring-2">{{ book.description or '' }}</textarea>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-end gap-3 border-t border-slate-100 pt-5">
+        <a href="{{ url_for('books.view', book_id=book_id) if editing else url_for('books.index') }}"
+           class="rounded-lg border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-600 transition hover:bg-slate-50">Cancel</a>
+        <button type="submit"
+                class="rounded-lg bg-brand-600 px-6 py-2.5 text-sm font-semibold text-white shadow-lg shadow-brand-600/25 transition-all hover:bg-brand-700 active:scale-95">
+          {{ 'Save Changes' if editing else 'Add Book' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

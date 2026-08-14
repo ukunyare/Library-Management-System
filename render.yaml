@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: library-management-system
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app --workers 1 --threads 4 --timeout 120
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: USE_SUPABASE
+        value: "true"
+      - key: SUPABASE_URL
+        value: https://utnimtuaektwrzaoajeg.supabase.co
+      - key: SUPABASE_KEY
+        sync: false
+      - key: ISSUE_DAYS
+        value: "14"
+      - key: FINE_PER_DAY
+        value: "1.0"
