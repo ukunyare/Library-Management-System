@@ -31,7 +31,7 @@
           <label for="book_id" class="mb-1.5 block text-sm font-semibold text-slate-700">Book *</label>
           <select id="book_id" name="book_id" required
                   class="input w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none ring-brand-500 transition focus:ring-2">
-            <option value="" disabled selected>Select a bookâ€¦</option>
+            <option value="" disabled selected>Select a book…</option>
             {% for book in books %}
             <option value="{{ book.id }}" {% if selected_book == book.id %}selected{% endif %}>
               {{ book.title }} — {{ book.book_id }} — {{ book.author }} ({{ book.available_copies }} available)
@@ -46,10 +46,10 @@
           <label for="member_id" class="mb-1.5 block text-sm font-semibold text-slate-700">Member *</label>
           <select id="member_id" name="member_id" required
                   class="input w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none ring-brand-500 transition focus:ring-2">
-            <option value="" disabled selected>Select a memberâ€¦</option>
+            <option value="" disabled selected>Select a member…</option>
             {% for member in members %}
             <option value="{{ member.id }}" {% if selected_member == member.id %}selected{% endif %}>
-              {{ member.name }}{% if member.email %} â€” {{ member.email }}{% endif %}
+              {{ member.name }}{% if member.email %} — {{ member.email }}{% endif %}
             </option>
             {% endfor %}
           </select>

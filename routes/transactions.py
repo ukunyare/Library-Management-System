@@ -34,19 +34,98 @@ def index():
 @login_required
 def overdue():
     page = request.args.get("page", 1, type=int)
-    pagination = (
-        Transaction.query.filter(
-            Transaction.status == "issued", Transaction.due_date < date.today()
-        )
-        .order_by(Transaction.due_date.asc())
-        .paginate(page=page, per_page=12, error_out=False)
+    sort = request.args.get("sort", "due")
+    sort_dir = request.args.get("dir", "asc")
+    if sort not in ("due", "issue"):
+        sort = "due"
+    if sort_dir not in ("asc", "desc"):
+        sort_dir = "asc"
+
+    query = Transaction.query.filter(
+        Transaction.status == "issued", Transaction.due_date < date.today()
     )
+
+    def _date_param(name):
+        try:
+            return date.fromisoformat(request.args.get(name, ""))
+        except (TypeError, ValueError):
+            return None
+
+    issued_from = _date_param("issued_from")
+    issued_to = _date_param("issued_to")
+    due_from = _date_param("due_from")
+    due_to = _date_param("due_to")
+    if issued_from:
+        query = query.filter(Transaction.issue_date >= issued_from)
+    if issued_to:
+        query = query.filter(Transaction.issue_date <= issued_to)
+    if due_from:
+        query = query.filter(Transaction.due_date >= due_from)
+    if due_to:
+        query = query.filter(Transaction.due_date <= due_to)
+
+    column = Transaction.due_date if sort == "due" else Transaction.issue_date
+    query = query.order_by(column.asc() if sort_dir == "asc" else column.desc())
+
+    pagination = query.paginate(page=page, per_page=12, error_out=False)
     return render_template(
         "transactions/overdue.html",
         pagination=pagination,
         transactions=pagination.items,
         fine_per_day=current_app.config["FINE_PER_DAY"],
+        sort=sort,
+        sort_dir=sort_dir,
     )
+
+
+@transactions_bp.route("/test-overdue", methods=["POST"])
+@login_required
+def test_overdue():
+    """Admin testing/demo helper: create a real overdue transaction.
+
+    Uses past dates (issued 21 days ago, due 10 days ago) so it shows up on
+    the Overdue page immediately. Stored exactly like any normal transaction.
+    """
+    book = (
+        Book.query.filter(Book.available_copies > 0)
+        .order_by(Book.title.asc())
+        .first()
+    )
+    member = Member.query.order_by(Member.name.asc()).first()
+    if book is None:
+        flash(
+            "No book with available copies — cannot create a test overdue transaction.",
+            "error",
+        )
+        return redirect(url_for("transactions.overdue"))
+    if member is None:
+        flash("No member registered — cannot create a test overdue transaction.", "error")
+        return redirect(url_for("transactions.overdue"))
+
+    issue_date = date.today() - timedelta(days=21)
+    due_date = date.today() - timedelta(days=10)
+    tx = Transaction(
+        book=book,
+        member=member,
+        issue_date=issue_date,
+        due_date=due_date,
+        status="issued",
+    )
+    book.available_copies -= 1
+    db.session.add(tx)
+    db.session.commit()
+    supabase_client.sync_book(book)
+    supabase_client.sync_transaction(tx)
+
+    overdue_days = tx.days_overdue()
+    fine = overdue_days * current_app.config["FINE_PER_DAY"]
+    flash(
+        f"Test overdue transaction created: \"{book.title}\" issued to "
+        f"{member.name} on {issue_date:%b %d, %Y}, due {due_date:%b %d, %Y} "
+        f"({overdue_days} day(s) overdue, projected fine ${fine:.2f}).",
+        "success",
+    )
+    return redirect(url_for("transactions.overdue"))
 
 
 @transactions_bp.route("/issue", methods=["GET", "POST"])
@@ -114,6 +193,35 @@ def _validate_issue(book, member, due_date):
     if due_date <= date.today():
         return "Due date must be after today."
     return None
+
+
+@transactions_bp.route("/<int:tx_id>/edit-dates", methods=["POST"])
+@login_required
+def edit_dates(tx_id):
+    tx = db.get_or_404(Transaction, tx_id)
+    if tx.status != "issued":
+        flash("Only issued transactions can have their dates edited.", "error")
+        return redirect(request.referrer or url_for("transactions.index"))
+
+    issue_date = _parse_date(request.form.get("issue_date"))
+    due_date = _parse_date(request.form.get("due_date"))
+    if issue_date is None or due_date is None:
+        flash("Both Issued and Due dates are required.", "error")
+        return redirect(request.referrer or url_for("transactions.overdue"))
+    if due_date < issue_date:
+        flash("Due date cannot be before the issued date.", "error")
+        return redirect(request.referrer or url_for("transactions.overdue"))
+
+    tx.issue_date = issue_date
+    tx.due_date = due_date
+    db.session.commit()
+    supabase_client.sync_transaction(tx)
+    flash(
+        f'Dates updated for "{tx.book.title}": '
+        f"issued {issue_date:%b %d, %Y}, due {due_date:%b %d, %Y}.",
+        "success",
+    )
+    return redirect(request.referrer or url_for("transactions.overdue"))
 
 
 @transactions_bp.route("/<int:tx_id>/return", methods=["POST"])
